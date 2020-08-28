@@ -1,19 +1,27 @@
-var arr;
-
-document.getElementById('filterVolwassenen').onclick( (button) => {
-	event('volwassenen') 
-	button.color('green')})
-document.getElementById('filterVolwassenen').onclick( (button) => event('volwassenen'))
+var arr = [];
+var genres = [];
 
 fetch('/entries.json')
   .then(res => res.json())
   .then((json) => {
 	console.log(`Got the response, there are ${json.items.length} entries`);
 	arr = [...json.items]
-	print(arr);
 });
 
+const filterClickEvent = (filterName) => {
+	if (filterName == 'volwassenen') {
+		const arrFiltered = [...arr.filter((value) => { return value.category == filterName })]
+	} else if (filterName == 'familie') {
+		const arrFiltered = [...arr.filter((value) => { return value.category == filterName })]
+		console.log(arrFiltered)
+	} else {
+		const dataCopy = [...arr];
+		console.log(filterName)
+	}
+}
 
+document.getElementById('filterVolwassenen').addEventListener('click', function(){filterClickEvent('volwassenen')})
+document.getElementById('filterFamilie').addEventListener('click', function(){filterClickEvent('familie')})
 
 const existfilter = item => item == !null
 const itemToLowerCase = item => item['genre-v2'].toLowerCase()
@@ -27,17 +35,6 @@ const count = (arr, classifier) => { //count(allData, function(item) { return it
     }, {})
 }
 
-const event = ( filterName) => {
-	if (filterName == 'volwassenen') {
-		const arrFiltered = [...arr.filter((value) => { return value.category == filterName })]
-		console.log(arrFiltered)
-	} else if (filterName == 'familie') {
-		const arrFiltered = [...arr.filter((value) => { return value.category == filterName })]
-		console.log(arrFiltered)
-	} else {
-		const dataCopy = [...arr];
-	}
-}
 
 
 // const theBigDevFunction = () => {
