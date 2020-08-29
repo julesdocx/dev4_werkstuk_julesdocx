@@ -2,67 +2,86 @@
 let data = [];
 const getData = async () => {
 	await fetch('/entries.json').then(res => res.json()).then((json) => {
-			console.log(`Got the response, there are ${json.items.length} entries`)
-			data = json.items
-			displayFilters();
+		console.log(`Got the response, there are ${json.items.length} entries`)
+		data = json.items
+		displayFilters();
 	});
 }
 
 const displayFilters = () => {
 	const filters = getAllFilters();
 	for (doelgroep of filters.doelgroep) {
-		document.body.insertAdjacentHTML("afterbegin", `<button onclick=filterEvent(${doelgroep}) >${doelgroep.toUpperCase()}</button>`)
+		document.getElementById('doelgroepen').insertAdjacentHTML("afterbegin", `<button class="button-filter" id="${doelgroep}">${doelgroep.toUpperCase()}</button>`)
+	}
 	for (genre of filters.genre) {
-		document.body.insertAdjacentHTML("afterend",`<button  onclick=filterEvent(${doelgroep} >${genre.toUpperCase()}</button>`)
+		document.getElementById('genres').insertAdjacentHTML("afterbegin", `<button class="button-filter" id="${genre}" onclick=filterEvent("${genre}")>${genre.toUpperCase()}</button>`)
+	}
+	addBtnListeners()
+}
+
+const addBtnListeners = () => {
+	let elements = document.getElementsByClassName('button-filter')
+	for (filter of elements) {
+		const element = document.getElementById(filter.id)
+		element.addEventListener('click', () => {
+			if (!element.classList.contains("checked")) {
+				element.classList.add("checked")
+			} else {
+				element.classList.remove("checked")
+			}
+		})
 	}
 }
 
-// GET ALL FILTERS returns {}
+// GET ALL FILTERS
 const getAllFilters = () => {
-	const doelgroepSet = data.reduce((acc,value) =>{ return acc.add(value['category'].toLowerCase().trim());  }, new Set())
-	const genreSet = data.reduce((acc,value) =>{ return acc.add(value['genre-v2'].toLowerCase().trim());  }, new Set())
-	return { "genre": [...genreSet], "doelgroep": [...doelgroepSet] }
-}
+	const doelgroepSet = data.reduce((acc, value) => {
+		return acc.add(value['category'].toLowerCase().trim());
+	}, new Set())
+	const genreSet = data.reduce((acc, value) => {
+		return acc.add(value['genre-v2'].toLowerCase().trim());
+	}, new Set())
+	return {
+		"genre": [...genreSet],
+		"doelgroep": [...doelgroepSet]
+	}
+} // {}
+
+const filterEvent = (filterName) => {
+	const filteredData = filterData(checkFilters())
+} // 
 
 const checkFilters = () => {
-	
-}
+	let checkedElements = document.getElementsByClassName('checked')
+	let arr = []
+	for (filter of checkedElements) {
+		arr.push(filter.id)
+	}
+	return arr
+} // []
 
-const filterData = () => {
+const filterData = (arr) => {
+	const filteredData = data.filter((value)) => {
+
+	}
 
 }
 
 const filterDoelgroep = (filterName) => {
-	const arr = getData().then((data)=>{
-		const arrFiltered = [...data.filter((value) => { return value.category == filterName })]
+	const arr = getData().then((data) => {
+		const arrFiltered = [...data.filter((value) => {
+			return value.category == filterName
+		})]
 		console.log(arrFiltered)
 		return arrFiltered
 	})
 }
 
 const filterGenre = (arr, filterName) => {
-	const arrFiltered = [...arr.filter((value) => { return value.genre == filterName })]
+	const arrFiltered = [...arr.filter((value) => {
+		return value.genre == filterName
+	})]
 	return arrFiltered
 }
 
-const filterEvent = (filterName, filterInputDoelgroep) => {
-	const arr = filterGenre(filterDoelgroep(filterInputDoelgroep), filterName)
-}
-//document.getElementById('filterVolwassenen').addEventListener('click', filterEvent('volwassenen'))
-//document.getElementById('filterFamilie').addEventListener('click', filterEvent('familie'))
-//document.getElementById('filterFamilie').addEventListener('click', () => {filterEvent('theater', findDoelGroep())})// theater is nog hardcoded
-
-const existfilter = item => item == !null
-const itemToLowerCase = item => item['genre-v2'].toLowerCase()
-const trimGenre = item => item['genre-v2'].trim()
-
-
-const count = (arr, classifier) => { //count(allData, function(item) { return item['genre-v2']}))
-    return arr.reduce(function(acc,value) {
-        var p = (classifier || String)(value)
-        acc[p] = acc.hasOwnProperty(p) ? acc[p] + 1 : 1
-        return acc
-    }, {})
-}
-
-getData();
+getData()
