@@ -49,13 +49,13 @@ const getAllFilters = () => {
 	}
 } // {}
 
-const filterEvent = (filterName) => {
+const filterEvent = () => {
 	const filteredData = filterData(checkFilters())
 } // 
 
 const filterDoelgroep = (filterItem, arr) => {
     for (item of arr) {
-        if (filterItem['category'] == item || arr.length < 0){
+        if (filterItem['category'] == item || arr.length === 0){
 			return true
 		}
     }
@@ -63,15 +63,16 @@ const filterDoelgroep = (filterItem, arr) => {
 
 const filterGenre = (filterItem, arr) => {
     for (item of arr) {
-        if (filterItem['genre-v2'] == item || arr.lenght < 0){
+        if (filterItem['genre-v2'] == item || arr.lenght === 0){
 			return true
 		}
     }
-}
+} // true/false
 
 const filterData = (obj) => {
 	console.log(obj)
 	const filteredByDoelgroep = data.filter(x => filterDoelgroep(x, obj.doelgroep))
+	console.log(filteredByDoelgroep)
 	const filteredData = filteredByDoelgroep.filter(x => filterGenre(x, obj.genre))
 	console.log(filteredData)
 }
