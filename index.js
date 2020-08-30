@@ -1,17 +1,47 @@
 // FETCH REQUEST TO ENTRIES <JSON file>
-let data = [];
 
-const getData = async () => {
-	await fetch('/entries.json').then(res => res.json()).then((json) => {
-		console.log(`Got the response, there are ${json.items.length} entries`)
-		data = json.items
-		const filters = getAllFilters()
-		updateCards(data)
-		displayFilters(filters);
-	});
+const onPageLoad = () => {
+	const searchBar = document.getElementById('searchEntries')
+	searchBar.addEventListener('input', () => searchEntries(searchBar.value))
+	displayFilters();
 }
 
-const displayFilters = ( filters) => {
+const updateCards = async (arr) => {
+	const cards = await arr
+	document.getElementById('container-cards').innerHTML = ""
+		for(card of cards){
+			document.getElementById('container-cards').insertAdjacentHTML('afterbegin',`<div class="card-entries">${card['key-takeaways']}</div>`)
+	}
+}
+
+const getData = async () => {
+	return await fetch('/entries.json')
+	// .then(res => res.json()).then((json) => {
+	// 	console.log(`Got the response, there are ${json.items.length} entries`)
+	// 	data = json.items
+	// 	const filters = getAllFilters()
+	// 	updateCards(data)
+	// 	displayFilters(filters);
+	// });
+}
+
+const searchEntries = async (inputValue) => {
+	const fetchedData = await getData()
+	const dataObj = await fetchedData.json()
+
+	const filteredData = dataObj['items'].filter((input) => {
+		const regex = new RegExp(`^${inputValue}`)
+		return input['name'].match(regex)
+	})
+
+	if (inputValue.lenght === 0) {
+		filteredData.items = []
+	}
+	updateCards(filteredData);
+}
+
+const displayFilters = async () => {
+	const filters = await getAllFilters()
 	for (doelgroep of filters.doelgroep) {
 		document.getElementById('doelgroepen').insertAdjacentHTML("afterbegin", `<button class="button-filter doelgroep" id="${doelgroep}">${doelgroep.toUpperCase()}</button>`)
 	}
@@ -37,19 +67,21 @@ const addBtnListeners = () => {
 	}
 }
 
-const updateGenreButtons = (arr) => {
-	const filters = getAllFilters()
+const updateGenreButtons = async (arr) => {
+	const filters = await getAllFilters()
 	for (genre of filters.genre) {
 		document.getElementById(genre).innerHTML =  `${genre.toUpperCase()} (${countGenre(arr, genre)})`
 	}
 }
 
 // GET ALL FILTERS
-const getAllFilters = () => {
-	const doelgroepSet = data.reduce((acc, value) => {
+const getAllFilters = async () => {
+	const fetchedData = await getData()
+	const dataObj = await fetchedData.json()
+	const doelgroepSet = dataObj.items.reduce((acc, value) => {
 		return acc.add(value['category'].toLowerCase().trim());
 	}, new Set())
-	const genreSet = data.reduce((acc, value) => {
+	const genreSet = dataObj.items.reduce((acc, value) => {
 		return acc.add(value['genre-v2'].toLowerCase().trim());
 	}, new Set())
 	return {
@@ -58,14 +90,8 @@ const getAllFilters = () => {
 	}
 } // {}
 
-const updateCards = (arr) => {
-	document.getElementById('container-cards').innerHTML =""
-	for(card of arr){
-		document.getElementById('container-cards').insertAdjacentHTML('afterbegin',`<div class="card-entries">${card['key-takeaways']}</div>`)
-	}
-}
 
-const filterEvent = () => {
+const filterEvent = async () => {
 	const filteredData = filterData(checkFilters())
 	updateCards(filteredData)
 } // 
@@ -94,13 +120,15 @@ const filterGenre = (filterItem, arr) => {
 	}
 } // true/false
 
-const filterData = (obj) => {
-	const filteredByDoelgroep = data.filter(x => filterDoelgroep(x, obj.doelgroep))
+const filterData = async (obj) => {
+	const fetchedData = await getData()
+	const dataObj = await fetchedData.json()
+	const filteredByDoelgroep = await dataObj.items.filter(x => filterDoelgroep(x, obj.doelgroep))
 	updateGenreButtons(filteredByDoelgroep);
-	return filteredByDoelgroep.filter(x => filterGenre(x, obj.genre))
+	return [...filteredByDoelgroep.filter(x => filterGenre(x, obj.genre))]
 }
 
-const checkFilters = () => {
+const checkFilters =  () => {
 	let checkedElements = getCheckedElements()
 	let arrD = []
 	let arrG = []
@@ -125,4 +153,5 @@ const countGenre = (arr, filterName) => {
 const getCheckedElements = () => { return document.getElementsByClassName('checked') }
 const getGenreButtons = () => { return document.getElementsByClassName('genre') }
 
-getData()
+
+onPageLoad()
