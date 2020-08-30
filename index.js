@@ -6,7 +6,8 @@ const getData = async () => {
 		console.log(`Got the response, there are ${json.items.length} entries`)
 		data = json.items
 		const filters = getAllFilters()
-		displayFilters( filters);
+		updateCards(data)
+		displayFilters(filters);
 	});
 }
 
@@ -15,10 +16,10 @@ const displayFilters = ( filters) => {
 		document.getElementById('doelgroepen').insertAdjacentHTML("afterbegin", `<button class="button-filter doelgroep" id="${doelgroep}">${doelgroep.toUpperCase()}</button>`)
 	}
 	for (genre of filters.genre) {
-		console.log(data.length)
 		document.getElementById('genres').insertAdjacentHTML("afterbegin", `<button class="button-filter genre" id="${genre}">${genre.toUpperCase()}</button>`)
 	}
 	addBtnListeners()
+	filterEvent()
 }
 
 const addBtnListeners = () => {
@@ -36,6 +37,13 @@ const addBtnListeners = () => {
 	}
 }
 
+const updateGenreButtons = (arr) => {
+	const filters = getAllFilters()
+	for (genre of filters.genre) {
+		document.getElementById(genre).innerHTML =  `${genre.toUpperCase()} (${countGenre(arr, genre)})`
+	}
+}
+
 // GET ALL FILTERS
 const getAllFilters = () => {
 	const doelgroepSet = data.reduce((acc, value) => {
@@ -50,8 +58,16 @@ const getAllFilters = () => {
 	}
 } // {}
 
+const updateCards = (arr) => {
+	document.getElementById('container-cards').innerHTML =""
+	for(card of arr){
+		document.getElementById('container-cards').insertAdjacentHTML('afterbegin',`<div class="card-entries">${card['key-takeaways']}</div>`)
+	}
+}
+
 const filterEvent = () => {
 	const filteredData = filterData(checkFilters())
+	updateCards(filteredData)
 } // 
 
 const filterDoelgroep = (filterItem, arr) => {
@@ -80,9 +96,8 @@ const filterGenre = (filterItem, arr) => {
 
 const filterData = (obj) => {
 	const filteredByDoelgroep = data.filter(x => filterDoelgroep(x, obj.doelgroep))
-	let genreButtons =  [...getGenreButtons()]
-
-	const filteredData = filteredByDoelgroep.filter(x => filterGenre(x, obj.genre))
+	updateGenreButtons(filteredByDoelgroep);
+	return filteredByDoelgroep.filter(x => filterGenre(x, obj.genre))
 }
 
 const checkFilters = () => {
