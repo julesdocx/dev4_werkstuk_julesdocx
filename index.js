@@ -5,16 +5,17 @@ const getData = async () => {
 	await fetch('/entries.json').then(res => res.json()).then((json) => {
 		console.log(`Got the response, there are ${json.items.length} entries`)
 		data = json.items
-		displayFilters();
+		const filters = getAllFilters()
+		displayFilters( filters);
 	});
 }
 
-const displayFilters = () => {
-	let filters = getAllFilters()
+const displayFilters = ( filters) => {
 	for (doelgroep of filters.doelgroep) {
 		document.getElementById('doelgroepen').insertAdjacentHTML("afterbegin", `<button class="button-filter doelgroep" id="${doelgroep}">${doelgroep.toUpperCase()}</button>`)
 	}
 	for (genre of filters.genre) {
+		console.log(data.length)
 		document.getElementById('genres').insertAdjacentHTML("afterbegin", `<button class="button-filter genre" id="${genre}">${genre.toUpperCase()}</button>`)
 	}
 	addBtnListeners()
@@ -54,31 +55,38 @@ const filterEvent = () => {
 } // 
 
 const filterDoelgroep = (filterItem, arr) => {
-    for (item of arr) {
-        if (filterItem['category'] == item || arr.length === 0){
-			return true
+	if (arr.length == 0){
+		 return true 
+	} else {
+		for (item of arr) {
+			if (filterItem['category'] == item){
+				return true
+			}
 		}
-    }
+	}	
 }
 
 const filterGenre = (filterItem, arr) => {
-    for (item of arr) {
-        if (filterItem['genre-v2'] == item || arr.lenght === 0){
-			return true
+	if (arr.length == 0){
+		return true 
+   	} else {
+    	for (item of arr) {
+        	if (filterItem['genre-v2'] == item || arr.lenght === 0){
+				return true
+			}
 		}
-    }
+	}
 } // true/false
 
 const filterData = (obj) => {
-	console.log(obj)
 	const filteredByDoelgroep = data.filter(x => filterDoelgroep(x, obj.doelgroep))
-	console.log(filteredByDoelgroep)
+	let genreButtons =  [...getGenreButtons()]
+
 	const filteredData = filteredByDoelgroep.filter(x => filterGenre(x, obj.genre))
-	console.log(filteredData)
 }
 
 const checkFilters = () => {
-	let checkedElements = document.getElementsByClassName('checked')
+	let checkedElements = getCheckedElements()
 	let arrD = []
 	let arrG = []
 	for (item of checkedElements) {
@@ -93,5 +101,13 @@ const checkFilters = () => {
 		"doelgroep": [...arrD]
 	}
 } // {}
+
+const countGenre = (arr, filterName) => {
+	const filteredByGenre = [...arr.filter((value) =>  value['genre-v2'] == filterName )]
+	return filteredByGenre.length
+}
+
+const getCheckedElements = () => { return document.getElementsByClassName('checked') }
+const getGenreButtons = () => { return document.getElementsByClassName('genre') }
 
 getData()
