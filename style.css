@@ -16,6 +16,7 @@
     background-color: green;
     color: white
 }
-.content-card{
+.card-entries ul{
     display: inline;
+    list-style: none;
 }
