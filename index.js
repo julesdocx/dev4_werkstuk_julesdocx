@@ -1,5 +1,6 @@
 // FETCH REQUEST TO ENTRIES <JSON file>
 let data = [];
+
 const getData = async () => {
 	await fetch('/entries.json').then(res => res.json()).then((json) => {
 		console.log(`Got the response, there are ${json.items.length} entries`)
@@ -9,26 +10,27 @@ const getData = async () => {
 }
 
 const displayFilters = () => {
-	const filters = getAllFilters();
+	let filters = getAllFilters()
 	for (doelgroep of filters.doelgroep) {
-		document.getElementById('doelgroepen').insertAdjacentHTML("afterbegin", `<button class="button-filter" id="${doelgroep}">${doelgroep.toUpperCase()}</button>`)
+		document.getElementById('doelgroepen').insertAdjacentHTML("afterbegin", `<button class="button-filter doelgroep" id="${doelgroep}">${doelgroep.toUpperCase()}</button>`)
 	}
 	for (genre of filters.genre) {
-		document.getElementById('genres').insertAdjacentHTML("afterbegin", `<button class="button-filter" id="${genre}" onclick=filterEvent("${genre}")>${genre.toUpperCase()}</button>`)
+		document.getElementById('genres').insertAdjacentHTML("afterbegin", `<button class="button-filter genre" id="${genre}">${genre.toUpperCase()}</button>`)
 	}
 	addBtnListeners()
 }
 
 const addBtnListeners = () => {
 	let elements = document.getElementsByClassName('button-filter')
-	for (filter of elements) {
-		const element = document.getElementById(filter.id)
+	for (item of elements) {
+		let element = document.getElementById(item.id)
 		element.addEventListener('click', () => {
 			if (!element.classList.contains("checked")) {
 				element.classList.add("checked")
 			} else {
 				element.classList.remove("checked")
 			}
+			filterEvent();
 		})
 	}
 }
@@ -51,37 +53,44 @@ const filterEvent = (filterName) => {
 	const filteredData = filterData(checkFilters())
 } // 
 
+const filterDoelgroep = (filterItem, arr) => {
+    for (item of arr) {
+        if (filterItem['category'] == item || arr.length < 0){
+			return true
+		}
+    }
+}
+
+const filterGenre = (filterItem, arr) => {
+    for (item of arr) {
+        if (filterItem['genre-v2'] == item || arr.lenght < 0){
+			return true
+		}
+    }
+}
+
+const filterData = (obj) => {
+	console.log(obj)
+	const filteredByDoelgroep = data.filter(x => filterDoelgroep(x, obj.doelgroep))
+	const filteredData = filteredByDoelgroep.filter(x => filterGenre(x, obj.genre))
+	console.log(filteredData)
+}
+
 const checkFilters = () => {
 	let checkedElements = document.getElementsByClassName('checked')
-	let arr = []
-	for (filter of checkedElements) {
-		arr.push(filter.id)
+	let arrD = []
+	let arrG = []
+	for (item of checkedElements) {
+		if (item.classList.contains('doelgroep')){
+			arrD.push(item.id)
+		} else if(item.classList.contains('genre')) {
+			arrG.push(item.id)
+		}
 	}
-	return arr
-} // []
-
-const filterData = (arr) => {
-	const filteredData = data.filter((value)) => {
-
+	return {
+		"genre": [...arrG],
+		"doelgroep": [...arrD]
 	}
-
-}
-
-const filterDoelgroep = (filterName) => {
-	const arr = getData().then((data) => {
-		const arrFiltered = [...data.filter((value) => {
-			return value.category == filterName
-		})]
-		console.log(arrFiltered)
-		return arrFiltered
-	})
-}
-
-const filterGenre = (arr, filterName) => {
-	const arrFiltered = [...arr.filter((value) => {
-		return value.genre == filterName
-	})]
-	return arrFiltered
-}
+} // {}
 
 getData()
