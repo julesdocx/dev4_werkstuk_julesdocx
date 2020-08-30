@@ -1,31 +1,46 @@
-// FETCH REQUEST TO ENTRIES <JSON file>
-
+// Functies om bij het laden te starten.
 const onPageLoad = () => {
 	const searchBar = document.getElementById('searchEntries')
-	searchBar.addEventListener('input', () => searchEntries(searchBar.value))
+	searchBar.addEventListener('input', () => searchEntriesEvent(searchBar.value))
 	displayFilters();
 }
 
-const updateCards = async (arr) => {
-	const cards = await arr
-	document.getElementById('container-cards').innerHTML = ""
-		for(card of cards){
-			document.getElementById('container-cards').insertAdjacentHTML('afterbegin',`<div class="card-entries">${card['key-takeaways']}</div>`)
+// Returnt Promise met entries data
+const getData = async () => {
+	return await fetch('/entries.json')
+}
+
+// Alle filter-buttons klaarzetten
+const displayFilters = async () => {
+	const filters = await getAllFilters()
+	for (doelgroep of filters.doelgroep) {
+		document.getElementById('doelgroepen').insertAdjacentHTML("afterbegin", `<button class="button-filter doelgroep" id="${doelgroep}">${doelgroep.toUpperCase()}</button>`)
+	}
+	for (genre of filters.genre) {
+		document.getElementById('genres').insertAdjacentHTML("afterbegin", `<button class="button-filter genre" id="${genre}">${genre.toUpperCase()}</button>`)
+	}
+	addBtnListeners()
+	filterEvent()
+}
+
+// Returnt een {} met genres [] en doelgroep []
+const getAllFilters = async () => {
+	const fetchedData = await getData()
+	const dataObj = await fetchedData.json()
+	const doelgroepSet = dataObj.items.reduce((acc, value) => {
+		return acc.add(value['category'].toLowerCase().trim());
+	}, new Set())
+	const genreSet = dataObj.items.reduce((acc, value) => {
+		return acc.add(value['genre-v2'].toLowerCase().trim());
+	}, new Set())
+	return {
+		"genre": [...genreSet],
+		"doelgroep": [...doelgroepSet]
 	}
 }
 
-const getData = async () => {
-	return await fetch('/entries.json')
-	// .then(res => res.json()).then((json) => {
-	// 	console.log(`Got the response, there are ${json.items.length} entries`)
-	// 	data = json.items
-	// 	const filters = getAllFilters()
-	// 	updateCards(data)
-	// 	displayFilters(filters);
-	// });
-}
-
-const searchEntries = async (inputValue) => {
+// Event voor searchBar, zoekt door entries via inputValue
+const searchEntriesEvent = async (inputValue) => {
 	const fetchedData = await getData()
 	const dataObj = await fetchedData.json()
 
@@ -40,62 +55,22 @@ const searchEntries = async (inputValue) => {
 	updateCards(filteredData);
 }
 
-const displayFilters = async () => {
-	const filters = await getAllFilters()
-	for (doelgroep of filters.doelgroep) {
-		document.getElementById('doelgroepen').insertAdjacentHTML("afterbegin", `<button class="button-filter doelgroep" id="${doelgroep}">${doelgroep.toUpperCase()}</button>`)
-	}
-	for (genre of filters.genre) {
-		document.getElementById('genres').insertAdjacentHTML("afterbegin", `<button class="button-filter genre" id="${genre}">${genre.toUpperCase()}</button>`)
-	}
-	addBtnListeners()
-	filterEvent()
-}
-
-const addBtnListeners = () => {
-	let elements = document.getElementsByClassName('button-filter')
-	for (item of elements) {
-		let element = document.getElementById(item.id)
-		element.addEventListener('click', () => {
-			if (!element.classList.contains("checked")) {
-				element.classList.add("checked")
-			} else {
-				element.classList.remove("checked")
-			}
-			filterEvent();
-		})
-	}
-}
-
-const updateGenreButtons = async (arr) => {
-	const filters = await getAllFilters()
-	for (genre of filters.genre) {
-		document.getElementById(genre).innerHTML =  `${genre.toUpperCase()} (${countGenre(arr, genre)})`
-	}
-}
-
-// GET ALL FILTERS
-const getAllFilters = async () => {
-	const fetchedData = await getData()
-	const dataObj = await fetchedData.json()
-	const doelgroepSet = dataObj.items.reduce((acc, value) => {
-		return acc.add(value['category'].toLowerCase().trim());
-	}, new Set())
-	const genreSet = dataObj.items.reduce((acc, value) => {
-		return acc.add(value['genre-v2'].toLowerCase().trim());
-	}, new Set())
-	return {
-		"genre": [...genreSet],
-		"doelgroep": [...doelgroepSet]
-	}
-} // {}
-
-
+// Event voor filter-buttons
 const filterEvent = async () => {
 	const filteredData = filterData(checkFilters())
 	updateCards(filteredData)
-} // 
+}
 
+// Returnt gefilterde [] 
+const filterData = async (obj) => {
+	const fetchedData = await getData()
+	const dataObj = await fetchedData.json()
+	const filteredByDoelgroep = await dataObj.items.filter(x => filterDoelgroep(x, obj.doelgroep))
+	updateGenreButtons(filteredByDoelgroep);
+	return [...filteredByDoelgroep.filter(x => filterGenre(x, obj.genre))]
+}
+
+// Returnt true/false als filter voor een doelgroep []
 const filterDoelgroep = (filterItem, arr) => {
 	if (arr.length == 0){
 		 return true 
@@ -108,6 +83,7 @@ const filterDoelgroep = (filterItem, arr) => {
 	}	
 }
 
+// Returnt true/false als filter voor een genres []
 const filterGenre = (filterItem, arr) => {
 	if (arr.length == 0){
 		return true 
@@ -118,16 +94,9 @@ const filterGenre = (filterItem, arr) => {
 			}
 		}
 	}
-} // true/false
+} 
 
-const filterData = async (obj) => {
-	const fetchedData = await getData()
-	const dataObj = await fetchedData.json()
-	const filteredByDoelgroep = await dataObj.items.filter(x => filterDoelgroep(x, obj.doelgroep))
-	updateGenreButtons(filteredByDoelgroep);
-	return [...filteredByDoelgroep.filter(x => filterGenre(x, obj.genre))]
-}
-
+// Returnt een {} met genres [] en doelgroep [] van de gecheckte filters
 const checkFilters =  () => {
 	let checkedElements = getCheckedElements()
 	let arrD = []
@@ -143,15 +112,52 @@ const checkFilters =  () => {
 		"genre": [...arrG],
 		"doelgroep": [...arrD]
 	}
-} // {}
+}
 
+// Voegt de filterEvent() toe aan de filter-buttons
+const addBtnListeners = () => {
+	let elements = document.getElementsByClassName('button-filter')
+	for (item of elements) {
+		let element = document.getElementById(item.id)
+		element.addEventListener('click', () => {
+			if (!element.classList.contains("checked")) {
+				element.classList.add("checked")
+			} else {
+				element.classList.remove("checked")
+			}
+			filterEvent();
+		})
+	}
+}
+
+// Laad de gefilterde entries
+const updateCards = async (arr) => {
+	const cards = await arr
+	document.getElementById('container-cards').innerHTML = ""
+		for(card of cards){
+			document.getElementById('container-cards').insertAdjacentHTML('afterbegin',`<div class="card-entries">${card['key-takeaways']}</div>`)
+	}
+}
+
+// Voegt het getal van het aantal entries van een bepaalt genre in de filter-buttons
+const updateGenreButtons = async (arr) => {
+	const filters = await getAllFilters()
+	for (genre of filters.genre) {
+		document.getElementById(genre).innerHTML =  `${genre.toUpperCase()} (${countGenre(arr, genre)})`
+	}
+}
+
+// Returnt de lengte van een array gefiltert op 1 string
 const countGenre = (arr, filterName) => {
 	const filteredByGenre = [...arr.filter((value) =>  value['genre-v2'] == filterName )]
 	return filteredByGenre.length
 }
 
+// Returnt array met alle 'gecheckte' filter-buttons
 const getCheckedElements = () => { return document.getElementsByClassName('checked') }
+
+// Returnt alle genre filter-buttons
 const getGenreButtons = () => { return document.getElementsByClassName('genre') }
 
-
+// Lets Start!
 onPageLoad()
