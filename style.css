@@ -16,6 +16,12 @@
     background-color: green;
     color: white
 }
+.card-entries {
+    margin:5px;
+    border: solid 2px black;
+    border-radius: 30px;
+    padding: 3px 0px 3px 0px;
+}
 .card-entries ul{
     display: inline;
     list-style: none;

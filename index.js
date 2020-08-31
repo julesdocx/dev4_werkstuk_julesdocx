@@ -1,3 +1,4 @@
+
 // Functies om bij het laden te starten.
 const onPageLoad = () => {
 	const searchBar = document.getElementById('searchEntries');
@@ -47,17 +48,15 @@ const searchEntriesEvent = async (inputValue) => {
 		const regex = new RegExp(`^${inputValue}`);
 		return input['name'].match(regex);
 	})
-
 	if (inputValue.lenght === 0) {
 		filteredData.items = []
-	}
+	} 
 	updateCards(filteredData);
 }
 
 // Event voor filter-buttons
 const filterEvent = async () => {
 	const filteredData = await filterData(checkFilters());
-	console.log(filteredData.length)
 	updateCards(filteredData);
 }
 
@@ -66,7 +65,6 @@ const filterData = async (obj) => {
 	const fetchedData = await getData();
 	const dataObj = await fetchedData.json();
 	const filteredByDoelgroep = dataObj.items.filter(x => filterDoelgroep(x, obj.doelgroep));
-	console.log(filteredByDoelgroep.length)
 	updateGenreButtons(filteredByDoelgroep)
 	return filteredByDoelgroep.filter(x => filterGenre(x, obj.genre))
 }
