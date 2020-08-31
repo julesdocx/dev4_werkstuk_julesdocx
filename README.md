@@ -1,3 +1,7 @@
+AANPAK: 
+- Enkel en alleen functies en geen globale variabelen.
+- .forEach(), .filter(), .map(), .reduce() en async await waar nodig.
+
 # Development 4: Opdracht Werkstuk
 
 ## Short
