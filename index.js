@@ -55,8 +55,9 @@ const searchEntriesEvent = async (inputValue) => {
 }
 
 // Event voor filter-buttons
-const filterEvent = () => {
-	const filteredData = filterData(checkFilters());
+const filterEvent = async () => {
+	const filteredData = await filterData(checkFilters());
+	console.log(filteredData.length)
 	updateCards(filteredData);
 }
 
@@ -65,17 +66,18 @@ const filterData = async (obj) => {
 	const fetchedData = await getData();
 	const dataObj = await fetchedData.json();
 	const filteredByDoelgroep = dataObj.items.filter(x => filterDoelgroep(x, obj.doelgroep));
+	console.log(filteredByDoelgroep.length)
 	updateGenreButtons(filteredByDoelgroep)
-	return [...filteredByDoelgroep.filter(x => filterGenre(x, obj.genre))]
+	return filteredByDoelgroep.filter(x => filterGenre(x, obj.genre))
 }
 
 // Returnt true/false als filter voor een doelgroep []
-const filterDoelgroep = (filterItem, arr) => {
+const filterDoelgroep =  (filterItem, arr) => {
 	if (arr.length == 0){
 		return true;
 	} else  {
-		for ( let i = 0; i < arr.length; i++) {
-        	if (filterItem['category'] === arr[i] || arr.length === 0){
+		for ( x of arr) {
+        	if (filterItem['category'] == x ){
 				return true;
 			}
 		}
@@ -83,12 +85,12 @@ const filterDoelgroep = (filterItem, arr) => {
 }
 
 // Returnt true/false als filter voor een genres []
-const filterGenre = (filterItem, arr) => {
+const filterGenre =  (filterItem, arr) => {
 	if (arr.length == 0){
 		return true;
    	} else {
-		for ( let i = 0; i < arr.length; i++) {
-        	if (filterItem['genre'] === arr[i] || arr.length === 0){
+		for ( x of arr) {
+        	if (filterItem['genre-v2'] == x ){
 				return true;
 			}
 		}
@@ -160,5 +162,3 @@ const getFilterButtons = () => { return document.getElementsByClassName('button-
 
 // Lets Start!
 onPageLoad();
-
-export { countGenre, getFilterButtons }
